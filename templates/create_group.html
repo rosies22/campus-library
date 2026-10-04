@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Start a Group &mdash; Campus Reads{% endblock %}
+
+{% block content %}
+  <section class="form-page">
+    <h1>Start a reading group</h1>
+    <p class="form-intro">You'll become the group's organizer &mdash; you can set the current book and schedule meetings.</p>
+    <form method="post" class="stack-form">
+      <label>
+        Group name
+        <input type="text" name="name" required placeholder="e.g. Sci-Fi & Society">
+      </label>
+      <label>
+        Genre
+        <input type="text" name="genre" placeholder="e.g. Science Fiction">
+      </label>
+      <label>
+        Description
+        <textarea name="description" rows="3" placeholder="What's this group about?"></textarea>
+      </label>
+      <label>
+        Usual meeting location
+        <input type="text" name="meeting_location" placeholder="e.g. Library Room 204">
+      </label>
+      <button type="submit" class="btn-primary">Create group</button>
+    </form>
+  </section>
+{% endblock %}

@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}My Groups &mdash; Campus Reads{% endblock %}
+
+{% block content %}
+  <section class="hero hero-compact">
+    <h1>My groups</h1>
+  </section>
+
+  <section class="dashboard-section">
+    <h2 class="section-label">Upcoming meetings</h2>
+    {% if upcoming %}
+      <ul class="upcoming-list">
+        {% for m in upcoming %}
+          <li>
+            <span class="meeting-when">{{ m.datetime.strftime('%a, %b %-d · %-I:%M %p') }}</span>
+            <a href="{{ url_for('group_detail', group_id=m.group_id) }}">{{ m.group.name }}</a>
+            <span class="meta">{{ m.location }}</span>
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="empty-state">No meetings on the calendar yet.</p>
+    {% endif %}
+  </section>
+
+  <section class="dashboard-section">
+    <h2 class="section-label">Your groups</h2>
+    {% if groups %}
+      <div class="group-index">
+        {% for group in groups %}
+          <a class="group-row" href="{{ url_for('group_detail', group_id=group.id) }}">
+            <div class="group-row-main">
+              <h2>{{ group.name }}</h2>
+              <p class="group-desc">{{ group.description }}</p>
+            </div>
+            <div class="group-row-meta">
+              <span class="tag">{{ group.genre }}</span>
+              {% if group.current_book %}
+                <span class="meta">Reading &ldquo;{{ group.current_book.title }}&rdquo;</span>
+              {% endif %}
+            </div>
+          </a>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p class="empty-state">You haven't joined a group yet. <a href="{{ url_for('index') }}">Browse groups</a>.</p>
+    {% endif %}
+  </section>
+{% endblock %}

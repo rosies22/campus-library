@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+{% block title %}{{ group.name }} &mdash; Campus Reads{% endblock %}
+
+{% block content %}
+  <section class="group-header">
+    <span class="tag">{{ group.genre }}</span>
+    <h1>{{ group.name }}</h1>
+    <p class="group-desc-large">{{ group.description }}</p>
+    <div class="group-header-meta">
+      <span class="meta">{{ group.member_count }} member{{ 's' if group.member_count != 1 else '' }}</span>
+      {% if group.meeting_location %}<span class="meta">Usually meets: {{ group.meeting_location }}</span>{% endif %}
+    </div>
+
+    <div class="group-actions">
+      {% if not current_user.is_authenticated %}
+        <a class="btn-primary" href="{{ url_for('login', next=request.path) }}">Sign in to join</a>
+      {% elif is_member %}
+        <form method="post" action="{{ url_for('leave_group', group_id=group.id) }}">
+          <button type="submit" class="btn-secondary">Leave group</button>
+        </form>
+        {% if is_organizer %}
+          <a class="btn-secondary" href="{{ url_for('new_book', group_id=group.id) }}">Set current book</a>
+          <a class="btn-secondary" href="{{ url_for('new_meeting', group_id=group.id) }}">Schedule meeting</a>
+        {% endif %}
+      {% else %}
+        <form method="post" action="{{ url_for('join_group', group_id=group.id) }}">
+          <button type="submit" class="btn-primary">Join this group</button>
+        </form>
+      {% endif %}
+    </div>
+  </section>
+
+  <section class="content-block">
+    <h2 class="section-label">Currently reading</h2>
+    {% if current_book %}
+      <div class="book-card">
+        {% if current_book.cover_url %}
+          <img class="book-cover" src="{{ current_book.cover_url }}" alt="Cover of {{ current_book.title }}">
+        {% endif %}
+        <div>
+          <h3>{{ current_book.title }}</h3>
+          {% if current_book.author %}<p class="meta">by {{ current_book.author }}</p>{% endif %}
+          {% if current_book.synopsis %}<p class="group-desc">{{ current_book.synopsis }}</p>{% endif %}
+        </div>
+      </div>
+    {% else %}
+      <p class="empty-state">No book selected yet.</p>
+    {% endif %}
+  </section>
+
+  <section class="content-block">
+    <h2 class="section-label">Meetings</h2>
+    {% if group.upcoming_meetings %}
+      <ul class="meeting-list">
+        {% for m in group.upcoming_meetings %}
+          <li class="meeting-item">
+            <div class="meeting-item-main">
+              <span class="meeting-when">{{ m.datetime.strftime('%a, %b %-d · %-I:%M %p') }}</span>
+              <span class="meta">{{ m.location }}</span>
+              {% if m.notes %}<p class="meta">{{ m.notes }}</p>{% endif %}
+            </div>
+            <div class="meeting-item-rsvp">
+              {% set counts = m.rsvp_counts() %}
+              <span class="meta">{{ counts.going }} going &middot; {{ counts.maybe }} maybe</span>
+              {% if is_member %}
+                <form method="post" action="{{ url_for('rsvp_meeting', meeting_id=m.id) }}" class="rsvp-form">
+                  {% set mine = my_rsvps.get(m.id) %}
+                  <button type="submit" name="status" value="going" class="rsvp-btn {{ 'rsvp-active' if mine == 'going' }}">Going</button>
+                  <button type="submit" name="status" value="maybe" class="rsvp-btn {{ 'rsvp-active' if mine == 'maybe' }}">Maybe</button>
+                  <button type="submit" name="status" value="no" class="rsvp-btn {{ 'rsvp-active' if mine == 'no' }}">Can't make it</button>
+                </form>
+              {% endif %}
+            </div>
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="empty-state">No meetings scheduled yet.</p>
+    {% endif %}
+  </section>
+
+  <section class="content-block">
+    <h2 class="section-label">Discussion</h2>
+    {% if current_book %}
+      {% if current_book.comments %}
+        <ul class="comment-list">
+          {% for c in current_book.comments %}
+            <li class="comment {{ 'comment-spoiler' if c.is_spoiler }}">
+              <div class="comment-meta">
+                <strong>{{ c.user.name }}</strong>
+                <span class="meta">{{ c.created_at.strftime('%b %-d, %-I:%M %p') }}</span>
+                {% if c.is_spoiler %}<span class="tag tag-spoiler">Spoiler</span>{% endif %}
+              </div>
+              <p class="comment-body {{ 'comment-body-blurred' if c.is_spoiler }}">{{ c.body }}</p>
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p class="empty-state">No comments yet &mdash; be the first to say something about {{ current_book.title }}.</p>
+      {% endif %}
+
+      {% if is_member %}
+        <form method="post" action="{{ url_for('new_comment', book_id=current_book.id) }}" class="comment-form">
+          <textarea name="body" rows="3" placeholder="Share a thought about {{ current_book.title }}..." required></textarea>
+          <div class="comment-form-row">
+            <label class="checkbox-label">
+              <input type="checkbox" name="is_spoiler"> Contains spoilers
+            </label>
+            <button type="submit" class="btn-primary">Post</button>
+          </div>
+        </form>
+      {% elif current_user.is_authenticated %}
+        <p class="empty-state">Join the group to join the discussion.</p>
+      {% endif %}
+    {% else %}
+      <p class="empty-state">Discussion opens once a current book is set.</p>
+    {% endif %}
+  </section>
+
+  {% if group.past_books %}
+    <section class="content-block">
+      <h2 class="section-label">Reading history</h2>
+      <ul class="history-list">
+        {% for b in group.past_books %}
+          <li>{{ b.title }}{% if b.author %} <span class="meta">&mdash; {{ b.author }}</span>{% endif %}</li>
+        {% endfor %}
+      </ul>
+    </section>
+  {% endif %}
+{% endblock %}

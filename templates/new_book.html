@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Set Current Book &mdash; {{ group.name }}{% endblock %}
+
+{% block content %}
+  <section class="form-page">
+    <h1>Set the current book</h1>
+    <p class="form-intro">For {{ group.name }}. The previous book will move to reading history and its discussion thread will archive.</p>
+    <form method="post" class="stack-form">
+      <label>
+        Title
+        <input type="text" name="title" required>
+      </label>
+      <label>
+        Author
+        <input type="text" name="author">
+      </label>
+      <label>
+        Cover image URL <span class="optional">(optional)</span>
+        <input type="url" name="cover_url" placeholder="https://...">
+      </label>
+      <label>
+        Synopsis
+        <textarea name="synopsis" rows="4"></textarea>
+      </label>
+      <button type="submit" class="btn-primary">Set as current book</button>
+    </form>
+  </section>
+{% endblock %}

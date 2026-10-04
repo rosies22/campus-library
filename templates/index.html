@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}Browse Groups &mdash; Campus Reads{% endblock %}
+
+{% block content %}
+  <section class="hero">
+    <h1>Find your next reading group.</h1>
+    <p class="hero-sub">Every group on campus, what they're reading, and when they meet next.</p>
+  </section>
+
+  <section class="filter-bar">
+    <form method="get" class="search-form">
+      <input type="text" name="q" placeholder="Search by group name" value="{{ query }}">
+      <button type="submit">Search</button>
+    </form>
+    <div class="genre-pills">
+      <a href="{{ url_for('index') }}" class="pill {{ 'pill-active' if not active_genre }}">All</a>
+      {% for genre in genres %}
+        <a href="{{ url_for('index', genre=genre) }}" class="pill {{ 'pill-active' if genre == active_genre }}">{{ genre }}</a>
+      {% endfor %}
+    </div>
+  </section>
+
+  <section class="group-index">
+    {% if groups %}
+      {% for group in groups %}
+        <a class="group-row" href="{{ url_for('group_detail', group_id=group.id) }}">
+          <div class="group-row-main">
+            <h2>{{ group.name }}</h2>
+            <p class="group-desc">{{ group.description }}</p>
+          </div>
+          <div class="group-row-meta">
+            <span class="tag">{{ group.genre }}</span>
+            <span class="meta">{{ group.member_count }} member{{ 's' if group.member_count != 1 else '' }}</span>
+            {% if group.current_book %}
+              <span class="meta">Reading &ldquo;{{ group.current_book.title }}&rdquo;</span>
+            {% endif %}
+          </div>
+        </a>
+      {% endfor %}
+    {% else %}
+      <p class="empty-state">No groups match yet. Be the first to <a href="{{ url_for('create_group') if current_user.is_authenticated else url_for('signup') }}">start one</a>.</p>
+    {% endif %}
+  </section>
+{% endblock %}
